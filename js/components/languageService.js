@@ -17,19 +17,7 @@ export default {
 	normalizeLanguage(lang) {
 		if (!lang) return 'Other';
 
-		// Handle GitHub edge cases
-		const cleanLang = lang
-			.replace(/\s*\(.*?\)/g, '') // Remove parentheses content
-			.replace(/\.\w+/g, '') // Remove file extensions
-			.trim()
-			.toUpperCase();
-
-		// Match against known aliases
-		for (const [key, value] of Object.entries(LANGUAGE_ALIASES)) {
-			if (cleanLang.includes(key)) return value;
-		}
-
-		// Special cases that need specific capitalization
+		// First check exact matches for special cases
 		const specialCases = {
 			'javascript': 'JavaScript',
 			'typescript': 'TypeScript',
@@ -43,11 +31,25 @@ export default {
 			'json': 'JSON',
 			'yaml': 'YAML',
 			'api': 'API',
+			'c#': 'C#',
+			'c++': 'C++',
 		};
 		
-		const lowerLang = lang.toLowerCase();
+		const lowerLang = lang.toLowerCase().trim();
 		if (specialCases[lowerLang]) {
 			return specialCases[lowerLang];
+		}
+
+		// Handle GitHub edge cases
+		const cleanLang = lang
+			.replace(/\s*\(.*?\)/g, '') // Remove parentheses content
+			.replace(/\.\w+/g, '') // Remove file extensions
+			.trim()
+			.toUpperCase();
+
+		// Match against known aliases (exact match only to avoid CSS->C# bug)
+		for (const [key, value] of Object.entries(LANGUAGE_ALIASES)) {
+			if (cleanLang === key) return value;
 		}
 		
 		// Title case for other languages
@@ -91,12 +93,11 @@ export default {
 			YAML: { bg: '#cb4b16', text: '#ffffff' }, // Red-orange with white text
 			XML: { bg: '#0060ac', text: '#ffffff' }, // Blue with white text
 			SQL: { bg: '#e38c00', text: '#000000' }, // Orange with black text
+			'Jupyter Notebook': { bg: '#da5b0b', text: '#ffffff' }, // Orange with white text
 		};
 		
-		// Debug log to see what language names we're getting
 		const colorInfo = colors[lang];
 		if (!colorInfo) {
-			console.log(`No color found for language: "${lang}"`);
 			return { bg: '#cccccc', text: '#000000' };
 		}
 		

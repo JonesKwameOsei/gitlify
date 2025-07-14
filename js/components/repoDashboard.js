@@ -4,7 +4,17 @@ import HeatmapModule from './heatmapModule.js';
 
 export default {
 	filterRepositories(repos, filters) {
-		return repos.filter((repo) => {
+		const filtered = repos.filter((repo) => {
+			// Search filter
+			if (filters.search) {
+				const searchTerm = filters.search.toLowerCase();
+				const nameMatch = repo.name.toLowerCase().includes(searchTerm);
+				const descMatch = repo.description?.toLowerCase().includes(searchTerm) || false;
+				const topicMatch = repo.topics?.some(topic => topic.toLowerCase().includes(searchTerm)) || false;
+				
+				if (!nameMatch && !descMatch && !topicMatch) return false;
+			}
+
 			// Use normalized language for consistent filtering
 			const normalizedLang = languageService.normalizeLanguage(repo.language);
 
@@ -23,6 +33,10 @@ export default {
 
 			return true;
 		});
+		
+		// Filtering complete
+		
+		return filtered;
 	},
 
 	sortRepositories(repos, criteria = 'updated_at') {
@@ -71,11 +85,32 @@ export default {
 			);
 
 			// Set up event delegation for repo cards (handled by global event delegation in app.js)
+			
+			// Debug: Log language distribution
+			console.log('Repository language breakdown:');
+			const langDebug = {};
+			allRepos.forEach(repo => {
+				const lang = repo.language || 'null';
+				const normalized = repo.normalizedLanguage || 'null';
+				langDebug[`${lang} → ${normalized}`] = (langDebug[`${lang} → ${normalized}`] || 0) + 1;
+			});
+			console.table(langDebug);
 
 			return `
         <section class="repository-dashboard">
           <header class="dashboard-header">
-            <h2>${allRepos.length} Repositories</h2>
+            <div class="header-top">
+              <h2>${allRepos.length} Repositories</h2>
+              <div class="search-container">
+                <div class="repo-search-wrapper">
+                  <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                  </svg>
+                  <input type="text" id="repo-search" placeholder="Search repositories..." autocomplete="off">
+                  <button type="button" id="clear-search" class="clear-search hidden">×</button>
+                </div>
+              </div>
+            </div>
             <div class="controls">
               <select id="sort-control" aria-label="Sort repositories">
                 <option value="stargazers_count">Most Stars</option>
@@ -121,24 +156,43 @@ export default {
 
           
           <div class="language-summary">
-            <h3>Language Distribution</h3>
-            <div class="lang-badges">
+            <div class="summary-header">
+              <h3>📊 Language Distribution</h3>
+              <button id="show-lang-chart" class="modern-btn secondary">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+                View Full Analysis
+              </button>
+            </div>
+            <div class="lang-stats-grid">
               ${langStats.topLanguages
 								.map(
 									(lang) => `
-                <span class="lang-badge" style="background-color:${languageService.getLanguageBackgroundColor(
+                <div class="lang-stat-item" data-lang="${lang.name}" data-percentage="${lang.percentage}">
+                  <div class="lang-color-indicator" style="background-color:${languageService.getLanguageBackgroundColor(
 									lang.name
-								)}; color:${languageService.getLanguageTextColor(lang.name)}">
-                  ${lang.name} (${lang.percentage}%)
-                </span>
+								)}"></div>
+                  <div class="lang-info">
+                    <span class="lang-name">${lang.name}</span>
+                    <span class="lang-percentage">${lang.percentage}%</span>
+                  </div>
+                </div>
               `
 								)
 								.join('')}
             </div>
-            <button id="show-lang-chart">View Full Analysis</button>
           </div>
           
           <div class="lang-viz-container hidden" id="lang-viz">
+            <div class="viz-header">
+              <h3>📊 Language Analysis</h3>
+              <button id="close-viz" class="close-viz-btn" title="Close visualization">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+              </button>
+            </div>
             <div class="viz-row">
               <div class="chart-wrapper">
             <canvas id="lang-pie-chart"></canvas>
@@ -173,11 +227,23 @@ export default {
 		const langMap = {};
 		const totalRepos = repos.length;
 
-		// Collect language data using normalizedLanguage
+		// Collect language data using normalizedLanguage and fallback to repo.language
 		repos.forEach((repo) => {
-			const lang = repo.normalizedLanguage || 'Other';
-			langMap[lang] = (langMap[lang] || 0) + 1;
+			let normalizedLang = repo.normalizedLanguage;
+			
+			// If no normalizedLanguage, try to normalize the raw language
+			if (!normalizedLang || normalizedLang === 'Other') {
+				if (repo.language) {
+					normalizedLang = languageService.normalizeLanguage(repo.language);
+				} else {
+					normalizedLang = 'Other';
+				}
+			}
+			
+			langMap[normalizedLang] = (langMap[normalizedLang] || 0) + 1;
 		});
+		
+		// Language map processing complete
 
 		const languageStats = Object.entries(langMap)
 			.map(([name, count]) => ({
@@ -191,6 +257,181 @@ export default {
 			allLanguages: languageStats,
 			topLanguages: languageStats.slice(0, 5),
 			uniqueLanguages: [...new Set(languageStats.map((lang) => lang.name))],
+		};
+	},
+
+	// New method to update language stats display with detailed language data
+	async updateLanguageStats(filteredRepos) {
+		// Show loading state
+		const langStatsContainer = document.querySelector('.lang-stats-grid');
+		if (langStatsContainer) {
+			langStatsContainer.innerHTML = `
+				<div class="lang-stat-item">
+					<div class="loading-spinner"></div>
+					<div class="lang-info">
+						<span class="lang-name">Analyzing languages...</span>
+					</div>
+				</div>
+			`;
+		}
+		
+		// Fetch detailed language data for filtered repositories
+		const detailedLangStats = await this._getDetailedLanguageStats(filteredRepos);
+		
+		if (langStatsContainer) {
+			let statusMessage = '';
+			if (detailedLangStats.fallbackMode) {
+				statusMessage = '<div class="lang-status-message">⚠️ Using estimated data (API limit reached)</div>';
+			} else if (detailedLangStats.failedCalls > 0) {
+				statusMessage = `<div class="lang-status-message">ℹ️ ${detailedLangStats.failedCalls} repos using estimated data</div>`;
+			}
+			
+			langStatsContainer.innerHTML = statusMessage + detailedLangStats.topLanguages
+				.map((lang) => `
+					<div class="lang-stat-item" data-lang="${lang.name}" data-percentage="${lang.percentage}">
+						<div class="lang-color-indicator" style="background-color:${languageService.getLanguageBackgroundColor(lang.name)}"></div>
+						<div class="lang-info">
+							<span class="lang-name">${lang.name}</span>
+							<span class="lang-percentage">${lang.percentage}%</span>
+						</div>
+					</div>
+				`)
+				.join('');
+		}
+	},
+
+	// Method to fetch detailed language statistics from individual repositories
+	async _getDetailedLanguageStats(repos) {
+		const langBytesMap = {};
+		let totalBytes = 0;
+		let apiCallsMade = 0;
+		let failedCalls = 0;
+		
+		// Rate limiting configuration
+		const MAX_CONCURRENT_REQUESTS = 3;
+		const DELAY_BETWEEN_BATCHES = 500; // ms
+		
+		// Process repos in small batches to avoid rate limiting
+		for (let i = 0; i < repos.length; i += MAX_CONCURRENT_REQUESTS) {
+			const batch = repos.slice(i, i + MAX_CONCURRENT_REQUESTS);
+			
+			const batchPromises = batch.map(async (repo) => {
+				try {
+					apiCallsMade++;
+					const response = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/languages`, {
+						headers: apiService.hasToken() ? {
+							'Authorization': `token ${localStorage.getItem('github_token')}`,
+							'Accept': 'application/vnd.github.v3+json'
+						} : {
+							'Accept': 'application/vnd.github.v3+json'
+						}
+					});
+					
+					if (response.status === 429) {
+						// Rate limited - fall back to primary language
+						failedCalls++;
+						return this._getFallbackLanguageData(repo);
+					}
+					
+					if (response.status === 403) {
+						// Forbidden - likely authentication required, fall back
+						failedCalls++;
+						return this._getFallbackLanguageData(repo);
+					}
+					
+					if (!response.ok) {
+						failedCalls++;
+						return this._getFallbackLanguageData(repo);
+					}
+					
+					const languages = await response.json();
+					return { repo: repo.name, languages, source: 'api' };
+				} catch (error) {
+					failedCalls++;
+					return this._getFallbackLanguageData(repo);
+				}
+			});
+			
+			const batchResults = await Promise.all(batchPromises);
+			
+			// Process batch results
+			batchResults.forEach(result => {
+				if (result && result.languages) {
+					Object.entries(result.languages).forEach(([lang, bytes]) => {
+						const normalizedLang = languageService.normalizeLanguage(lang);
+						langBytesMap[normalizedLang] = (langBytesMap[normalizedLang] || 0) + bytes;
+						totalBytes += bytes;
+					});
+				}
+			});
+			
+			// Add delay between batches to respect rate limits
+			if (i + MAX_CONCURRENT_REQUESTS < repos.length) {
+				await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
+			}
+		}
+		
+		// If we have no data from APIs, fall back to primary language analysis
+		if (totalBytes === 0) {
+			return this._getFallbackLanguageStats(repos);
+		}
+		
+		// Convert to percentages
+		const languageStats = Object.entries(langBytesMap)
+			.map(([name, bytes]) => ({
+				name,
+				bytes,
+				percentage: totalBytes > 0 ? Math.round((bytes / totalBytes) * 100) : 0,
+			}))
+			.filter(lang => lang.percentage > 0)
+			.sort((a, b) => b.bytes - a.bytes);
+		
+		return {
+			allLanguages: languageStats,
+			topLanguages: languageStats.slice(0, 5),
+			uniqueLanguages: [...new Set(languageStats.map((lang) => lang.name))],
+			apiCallsMade,
+			failedCalls
+		};
+	},
+
+	// Fallback method when API calls fail
+	_getFallbackLanguageData(repo) {
+		if (repo.language) {
+			// Use a reasonable byte estimate based on repository size
+			const estimatedBytes = Math.max(1000, repo.size * 10); // Rough estimate
+			return {
+				repo: repo.name,
+				languages: { [repo.language]: estimatedBytes },
+				source: 'fallback'
+			};
+		}
+		return null;
+	},
+
+	// Fallback to primary language analysis when detailed data completely fails
+	_getFallbackLanguageStats(repos) {
+		const langMap = {};
+		const totalRepos = repos.length;
+
+		repos.forEach((repo) => {
+			const normalizedLang = repo.normalizedLanguage || languageService.normalizeLanguage(repo.language) || 'Other';
+			langMap[normalizedLang] = (langMap[normalizedLang] || 0) + 1;
+		});
+
+		const languageStats = Object.entries(langMap)
+			.map(([name, count]) => ({
+				name,
+				bytes: count * 1000, // Fake bytes for consistency
+				percentage: Math.round((count / totalRepos) * 100),
+			}))
+			.sort((a, b) => b.percentage - a.percentage);
+
+		return {
+			allLanguages: languageStats,
+			topLanguages: languageStats.slice(0, 5),
+			uniqueLanguages: [...new Set(languageStats.map((lang) => lang.name))],
+			fallbackMode: true
 		};
 	},
 
@@ -256,8 +497,11 @@ export default {
         </div>
 
         <div class="repo-actions">
-          <button class="show-languages" aria-label="Show language breakdown">
-            <i class="icon-code"></i> Languages
+          <button class="show-languages modern-btn tertiary" aria-label="Show language breakdown">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.01-4.65.63-6.86l-.22-.35c-.54-.86-1.31-1.49-2.24-1.8l-.44-.15c-.49-.15-1.02-.22-1.54-.22-.36 0-.73.03-1.09.1l-.41.08c-.84.17-1.63.51-2.3 1.01l-.35.26c-.7.54-1.28 1.22-1.68 2l-.17.35c-.31.67-.47 1.39-.47 2.12 0 .36.04.72.11 1.07l.09.4c.17.83.51 1.61 1 2.27l.26.35c.54.7 1.22 1.28 2 1.68l.35.17c.67.31 1.39.47 2.12.47.36 0 .72-.04 1.07-.11l.4-.09c.83-.17 1.61-.51 2.27-1l.35-.26c.7-.54 1.28-1.22 1.68-2l.17-.35c.31-.67.47-1.39.47-2.12 0-.36-.04-.72-.11-1.07l-.09-.4c-.17-.83-.51-1.61-1-2.27l-.26-.35z"/>
+            </svg>
+            Languages
           </button>
         </div>
         

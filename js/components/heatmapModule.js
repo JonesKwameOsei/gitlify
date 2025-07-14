@@ -4,9 +4,7 @@ import apiService from './apiService.js';
 export default {
 	async render(username) {
 		try {
-			console.log(`Fetching contributions for: ${username}`);
 			const data = await apiService.getContributions(username);
-			console.log('Raw heatmap data received:', data);
 			
 			if (!data) {
 				throw new Error('No contribution data received from API');
@@ -15,23 +13,16 @@ export default {
 			// Handle different API response structures
 			let contributionsWeeks = data.contributions || data.data || [];
 			if (!Array.isArray(contributionsWeeks)) {
-				console.error('Contributions is not an array:', contributionsWeeks);
 				throw new Error('Invalid contribution data format');
 			}
 			
 			// Flatten the weeks array into individual days
 			const contributions = contributionsWeeks.flat();
-			console.log(`Flattened ${contributionsWeeks.length} weeks into ${contributions.length} days`);
-			console.log('Sample day data:', contributions[0]);
-			
 			const totalContributions = data.total || data.totalContributions || 
 				contributions.reduce((sum, day) => sum + (day.contributionCount || day.count || 0), 0);
 			
-			console.log(`Total contributions: ${totalContributions}`);
-			
 			// Hide heatmap if no contributions
 			if (totalContributions === 0) {
-				console.log('No contributions found, hiding heatmap');
 				return ''; // Return empty string to hide the heatmap
 			}
 			
@@ -87,22 +78,10 @@ API URL: https://github-contributions-api.deno.dev/${username}.json</pre>
 			return '<p>No contribution data available</p>';
 		}
 
-		console.log(`Rendering ${weeksData.length} weeks of contribution data`);
-		console.log('Sample week data:', weeksData[0]);
-		
-		// Debug: Check what contribution levels we have
-		const allDays = weeksData.flat();
-		const levelCounts = allDays.reduce((acc, day) => {
-			const level = day.contributionLevel || 'UNKNOWN';
-			acc[level] = (acc[level] || 0) + 1;
-			return acc;
-		}, {});
-		console.log('Contribution level distribution:', levelCounts);
 
 		return weeksData
 			.map((week, weekIndex) => {
 				if (!Array.isArray(week)) {
-					console.warn(`Week ${weekIndex} is not an array:`, week);
 					return '';
 				}
 				
@@ -120,7 +99,6 @@ API URL: https://github-contributions-api.deno.dev/${username}.json</pre>
 						const numericLevel = this._mapLevelToNumber(contributionLevel);
 						
 						if (!date) {
-							console.warn(`Day ${dayIndex} in week ${weekIndex} has no date:`, day);
 							return '';
 						}
 						

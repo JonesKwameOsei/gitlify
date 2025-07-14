@@ -41,6 +41,20 @@
               </svg>
               <input type="text" id="search-input" placeholder="Enter GitHub username" autocomplete="off"
                 spellcheck="false">
+              <button type="button" id="history-toggle" class="history-toggle hidden" title="Search History">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </button>
+              <div id="search-history-dropdown" class="search-history-dropdown hidden">
+                <div class="dropdown-header">Recent Searches</div>
+                <div class="dropdown-content" id="history-list">
+                  <!-- History items will be populated here -->
+                </div>
+                <div class="dropdown-footer">
+                  <button type="button" id="clear-history" class="clear-history-btn">Clear History</button>
+                </div>
+              </div>
             </div>
             <button type="submit" class="search-btn">
               <span class="btn-text">Analyze Profile</span>
@@ -70,10 +84,67 @@
               </svg>
               Compare Users
             </button>
+            <button type="button" id="token-setup-btn" class="secondary-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+              </svg>
+              GitHub Token
+            </button>
           </div>
         </form>
       </div>
     </section>
+
+    <!-- GitHub Token Setup Modal -->
+    <div id="token-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>🔑 GitHub Token Setup</h3>
+          <button class="close-modal" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="token-status" id="token-status">
+            <!-- Status will be populated by JavaScript -->
+          </div>
+          
+          <div class="token-explanation">
+            <h4>Why use a GitHub token?</h4>
+            <ul>
+              <li><strong>Without token:</strong> 60 requests per hour</li>
+              <li><strong>With token:</strong> 5,000 requests per hour</li>
+              <li>Access to private repositories (if token has permissions)</li>
+              <li>Better rate limiting and performance</li>
+            </ul>
+          </div>
+
+          <div class="token-setup">
+            <h4>How to create a GitHub token:</h4>
+            <ol>
+              <li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">GitHub Settings → Developer settings → Personal access tokens</a></li>
+              <li>Click "Generate new token (classic)"</li>
+              <li>Give it a name (e.g., "Gitlify App")</li>
+              <li>Select scopes: <code>public_repo</code> (or <code>repo</code> for private repos)</li>
+              <li>Click "Generate token" and copy it</li>
+            </ol>
+          </div>
+
+          <div class="token-input-section">
+            <label for="token-input">Paste your GitHub token:</label>
+            <div class="token-input-group">
+              <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+              <button type="button" id="toggle-token-visibility" class="toggle-btn">👁️</button>
+            </div>
+            <small>Your token is stored locally and never sent to any server except GitHub's API.</small>
+          </div>
+
+          <div class="token-actions">
+            <button type="button" id="save-token-btn" class="modern-btn">Save Token</button>
+            <button type="button" id="test-token-btn" class="modern-btn secondary">Test Token</button>
+            <button type="button" id="clear-token-btn" class="modern-btn tertiary">Clear Token</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Features Section -->
     <section class="features-section">
