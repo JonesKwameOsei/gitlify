@@ -360,7 +360,7 @@ graph TD
 ### **⚡ Recommended Tools**
 
 - **Python** `python -m http.server`
-- **Node.js** `npx serve .`
+- **Node.js** `npm run dev`
 - **VS Code** Live Server extension
 
 </td>
@@ -375,19 +375,20 @@ git clone https://github.com/yourusername/gitlify.git
 # 2. Navigate to directory
 cd gitlify
 
-# 3. Start local server
-python -m http.server 8000
-# OR
-npx serve .
-# OR (with VS Code)
-# Use Live Server extension
+# 3. Install dependencies
+npm install
 
-# 4. Open in browser
+# 4. Start local server
+npm run dev
+
+# 5. Open in browser
 http://localhost:8000
 
-# 5. Optional: Set up GitHub token
-# Click "🔑 Setup GitHub Token" in the app
+# 6. Optional: Set up GitHub token
+
 ```
+
+> > Click "🔑 Setup GitHub Token" in the app
 
 </td>
 </tr>
@@ -411,12 +412,15 @@ http://localhost:8000
 **For enhanced functionality with 5,000 requests/hour:**
 
 1. **Generate Personal Access Token:**
-   - Visit [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
+
+   - Visit
+     [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
    - Click "Generate new token (classic)"
    - Select scopes: `public_repo` (for public repository access)
    - Copy the generated token
 
 2. **Configure in Gitlify:**
+
    - Click the "🔑 Setup GitHub Token" button on the landing page
    - Paste your token and click "Save Token"
    - Token is stored securely in your browser's local storage
@@ -473,10 +477,12 @@ Add multiple users to compare coding patterns and language preferences
 <summary><strong>🎯 Repository Analytics</strong></summary>
 
 - **Overview Statistics** - Total repos, stars, forks with beautiful displays
-- **Dynamic Language Distribution** - Interactive pie charts with real-time updates
+- **Dynamic Language Distribution** - Interactive pie charts with real-time
+  updates
 - **Advanced Sorting** - By stars, forks, date, name with instant UI updates
 - **Smart Filtering** - Language, license, fork status with search memory
-- **Repository Search** - Real-time search across names, descriptions, and topics
+- **Repository Search** - Real-time search across names, descriptions, and
+  topics
 - **Individual Repository Details** - Detailed language breakdown per repository
 - **Interactive Visualizations** - Closeable charts with timeline analysis
 - **Performance Metrics** - API usage tracking and rate limit management
@@ -572,19 +578,19 @@ Add multiple users to compare coding patterns and language preferences
 <table>
 <tr>
 <td align="center">
-  <img src="https://img.shields.io/github/issues/yourusername/gitlify?style=flat-square" alt="Issues">
+  <img src="https://img.shields.io/github/issues/JonesKwameOsei/gitlify?style=flat-square" alt="Issues">
   <br><strong>Issues</strong>
 </td>
 <td align="center">
-  <img src="https://img.shields.io/github/issues-pr/yourusername/gitlify?style=flat-square" alt="Pull Requests">
+  <img src="https://img.shields.io/github/issues-pr/JonesKwameOsei/gitlify?style=flat-square" alt="Pull Requests">
   <br><strong>Pull Requests</strong>
 </td>
 <td align="center">
-  <img src="https://img.shields.io/github/last-commit/yourusername/gitlify?style=flat-square" alt="Last Commit">
+  <img src="https://img.shields.io/github/last-commit/JonesKwameOsei/gitlify?style=flat-square" alt="Last Commit">
   <br><strong>Last Commit</strong>
 </td>
 <td align="center">
-  <img src="https://img.shields.io/github/languages/count/yourusername/gitlify?style=flat-square" alt="Languages">
+  <img src="https://img.shields.io/github/languages/count/JonesKwameOsei/gitlify?style=flat-square" alt="Languages">
   <br><strong>Languages</strong>
 </td>
 </tr>
@@ -627,7 +633,7 @@ Add multiple users to compare coding patterns and language preferences
 
 <br>
 
-<a href="https://github.com/yourusername/gitlify">
+<a href="https://github.com/JonesKwameOsei/gitlify">
   <img src="https://img.shields.io/badge/⭐%20Star%20This%20Repository-GitHub-yellow?style=for-the-badge&logo=github" alt="Star Repository">
 </a>
 
@@ -643,20 +649,23 @@ Add multiple users to compare coding patterns and language preferences
 
 ### **🚀 Ready to explore your GitHub story?**
 
-<a href="https://your-live-site-url.com">
+<a href="https://joneskwameosei.github.io/gitlify/">
   <img src="https://img.shields.io/badge/🔍%20Try%20Gitlify%20Now-Launch%20Demo-success?style=for-the-badge&labelColor=000000" alt="Try Gitlify">
 </a>
 
 <br><br>
 
-_Transform your GitHub data into beautiful, actionable insights with advanced analytics_
+_Transform your GitHub data into beautiful, actionable insights with advanced
+analytics_
 
-**🎆 Latest Features:** GitHub Token Auth • Smart Search Memory • Dynamic Visualizations • Interactive Charts
+**🎆 Latest Features:** GitHub Token Auth • Smart Search Memory • Dynamic
+Visualizations • Interactive Charts
 
 <br>
 
 ---
 
-<sub>© 2025 Gitlify • Built for the developer community • 100% Open Source • Production Ready</sub>
+<sub>© 2025 Gitlify • Built for the developer community • 100% Open Source •
+Production Ready</sub>
 
 </div>
